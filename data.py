@@ -7,8 +7,15 @@ import matplotlib.pyplot as plt
 class Data:
     def __init__(self, weight_decay=0.001):
         torch.manual_seed(42)
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.tokens, self.labels, self.tokens_t, self.labels_t = torch.load("dataset.pt")
+
+        self.tokens = self.tokens.to(self.device)
+        self.labels = self.labels.to(self.device)
+        self.tokens_t = self.tokens_t.to(self.device)
+        self.labels_t = self.labels_t.to(self.device)
+
 
         self.K = 2
         self.N_X = 1000
@@ -18,17 +25,17 @@ class Data:
         self.seq_len = 2
 
         cfg = HookedTransformerConfig(
-            n_layers=1,
-            n_heads=1,
-            d_model=4,
-            d_head=4,
-            d_mlp=4,
+            n_layers=6,
+            n_heads=8,
+            d_model=256,
+            d_head=32,
+            d_mlp=512,
             d_vocab=self.d_vocab,
             n_ctx=self.seq_len,
             act_fn="relu",
             normalization_type=None,
             d_vocab_out=self.N_Y,
-            device="cpu"
+            device=self.device
         )
         self.model = HookedTransformer(cfg)
         
@@ -38,7 +45,7 @@ class Data:
         self.val_losses = []
         self.weight_norms = []  
 
-    def run(self, num_steps=5000):
+    def run(self, num_steps=20000):
         
         for step in range(num_steps):
             logits = self.model(self.tokens)[:, -1, :]
