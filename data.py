@@ -5,7 +5,7 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 
 class Data:
-    def __init__(self, weight_decay=0.001):
+    def __init__(self, weight_decay=0.0001):
         torch.manual_seed(42)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -39,7 +39,7 @@ class Data:
         )
         self.model = HookedTransformer(cfg)
         
-        self.optimizer = optim.AdamW(self.model.parameters(), lr=0.001, weight_decay=weight_decay) #With weight
+        self.optimizer = optim.AdamW(self.model.parameters(), lr=0.0001, weight_decay=weight_decay) #With weight
         
         self.train_losses = []
         self.val_losses = []
@@ -61,6 +61,7 @@ class Data:
             
             self.optimizer.zero_grad()
             total_loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
             self.optimizer.step()
             
             self.train_losses.append(ce_loss.item())
@@ -73,6 +74,7 @@ class Data:
                 train_acc = (logits.argmax(dim=-1) == self.labels).float().mean().item()
                 print(f"step {step:4d} | train loss {ce_loss.item():.4f} | train acc {train_acc:.3f} | "
                       f"val loss {val_loss:.4f} | val acc {val_acc:.3f} | weight norm {weight_norm:.2f}")
+                print(logits.abs().max().item())
         
         self.plot_training()
 
