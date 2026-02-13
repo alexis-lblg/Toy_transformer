@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+
+# virtual environments
+venv/
+.env/
+
+# pytorch checkpoints
+*.pt
+*.pth
+*.ckpt
+
+# data
+data/
+datasets/
+
+# logs
+runs/
+wandb/
